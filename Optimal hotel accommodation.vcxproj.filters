@@ -13,10 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{2bd35522-57ba-4b98-9cd4-828764701c0e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="b_plus_tree.cpp">
+    <ClCompile Include="test_b_tree.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="b_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="b_tree_i_o.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_b_tree.h">
+      <Filter>tests</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

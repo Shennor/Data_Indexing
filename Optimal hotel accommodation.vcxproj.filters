@@ -35,5 +35,8 @@
     <ClInclude Include="test_b_tree.h">
       <Filter>tests</Filter>
     </ClInclude>
+    <ClInclude Include="i_dictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

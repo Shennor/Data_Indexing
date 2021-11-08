@@ -218,63 +218,81 @@ std::pair<BTreeNode<T>*, size_t> BTree<T>::Search(T& element)
 template <class T>
 void BTree<T>::Add(T& element)
 {
-	if (root_->keys.GetCount() == 0)
+	if (root_->keys->GetCount() == 0)
 	{
-		root_->keys.Append(element);
+		root_->keys->Append(element);
 		return;
 	}
 	// Search for position of element in the tree
 	std::pair<BTreeNode<T>*, size_t> insert_position = Search(element);
 	// case when element already exists: we must to insert only in leaves
-	while(insert_position.first->keys->Get(insert_position.second).data == element)
-	{
-		insert_position = Search(element, insert_position.first->keys->
-			Get(insert_position.second).left_child);
+	if (insert_position.first->keys->GetCount() > insert_position.second) {
+		while (insert_position.first->keys->Get(insert_position.second).data == element &&
+			insert_position.first->keys->Get(insert_position.second).left_child != nullptr)
+		{
+			insert_position = Search(element, insert_position.first->keys->
+				Get(insert_position.second).left_child);
+		}
 	}
 	// insert element in found position
 	BTreeNode<T>* current_node = insert_position.first;
-	current_node->keys.InsertAt(Key<T>(element), insert_position.second);
+	current_node->keys->InsertAt(Key<T>(element), insert_position.second);
 	// dealing with node sequence overflow
-	while (current_node->keys.GetCount() >= m_)
+	while (current_node->keys->GetCount() >= m_)
 	{
 		// middle element
-		size_t middle_i = current_node->keys.GetCount() / 2;
+		size_t middle_i = current_node->keys->GetCount() / 2;
 		// getting subsequences
-		Sequence<Key<T>> seq1 = current_node->keys
-			.GetSubsequence(0, middle_i - 1);
-		Sequence<Key<T>> seq2 = current_node->keys
-			.GetSubsequence(middle_i + 1,
-				current_node->keys.GetCount());
+		Sequence<Key<T>>* seq1 = current_node->keys
+			->GetSubsequence(0, middle_i - 1);
+		Sequence<Key<T>>* seq2 = current_node->keys
+			->GetSubsequence(middle_i + 1,
+				current_node->keys->GetCount() - 1);
 		// root_ case
 		if (current_node->parent == nullptr)
 		{
 			current_node->parent = new BTreeNode<T>();
+			root_ = current_node->parent;
 		}
 		// creating new child nodes from subsequences
 		BTreeNode<T>* left_node = new BTreeNode<T>(seq1, current_node->parent);
 		BTreeNode<T>* right_node = new BTreeNode<T>(seq2, current_node->parent);
 		// creating a new element key
 		Key<T> key = Key<T>(
-			current_node->keys.Get(middle_i),
+			current_node->keys->Get(middle_i).data,
 			left_node, right_node);
 		// inserting key in parent's sequence
 		// Search for position to insert key in parent node
-		size_t parent_i = binary_search(
-			&current_node->parent->keys, key_is_bigger, key.data, 0,
-			current_node->parent->keys.GetCount() - 1);
+		size_t parent_i = 0;
+		// if parent's sequence is empty => insert index is 0, else use binary search
+		if(current_node->parent->keys->GetCount() == 1)
+		{
+			if (current_node->parent->keys->Get(0).data < element)
+				parent_i = 1;
+		}
+		if(current_node->parent->keys->GetCount() > 1)
+		{
+			parent_i = binary_search<Key<T>>(*current_node->parent->keys, key.data, 0,
+				current_node->parent->keys->GetCount() - 1, key_is_bigger);
+		}
 		// inserting key
-		current_node->parent->keys.InsertAt(key, parent_i);
+		current_node->parent->keys->InsertAt(key, parent_i);
 		// left and right neighbors must contain pointers to new child nodes
 		if (parent_i > 0)
 		{
-			Key<T> left_neighbor = current_node->parent->keys.Get(parent_i);
-			left_neighbor.right_child = left_node;
+			// left neighbor
+			current_node->parent->keys->Set(parent_i - 1, Key<T>(
+				current_node->parent->keys->Get(parent_i - 1).data, 
+				current_node->parent->keys->Get(parent_i - 1).left_child, left_node));
 		}
-		if (parent_i < current_node->parent->keys.GetCount() - 1)
+		if (parent_i < current_node->parent->keys->GetCount() - 1)
 		{
-			Key<T> right_neighbor = current_node->parent->keys.Get(parent_i + 1);
-			right_neighbor.left_child = right_node;
+			// right neighbor
+			current_node->parent->keys->Set(parent_i + 1, Key<T>(
+				current_node->parent->keys->Get(parent_i + 1).data, right_node,
+				current_node->parent->keys->Get(parent_i + 1).right_child));
 		}
 		current_node = current_node->parent;
+		// memory miss
 	}
 }

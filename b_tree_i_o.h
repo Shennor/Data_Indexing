@@ -27,6 +27,7 @@ void print_b_tree_node_r(BTreeNode<T>* node)
 	for (int i = 0; i < node->keys->GetCount(); ++i)
 	{
 		std::cout << node->keys->Get(i).data;
+		if (i != node->keys->GetCount() - 1) std::cout << ",";
 		print_b_tree_node_r(node->keys->Get(i).right_child);
 	}
 	std::cout << "}";

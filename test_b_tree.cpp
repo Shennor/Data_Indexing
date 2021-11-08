@@ -172,7 +172,106 @@ void test_add()
 	assert(t1.GetRootPointer()->keys->GetFirst().left_child == nullptr);
 	assert(t1.GetRootPointer()->keys->GetFirst().right_child == nullptr);
 	tmp = 0;
-	t1.Add(tmp)
+	t1.Add(tmp);
+	assert(t1.GetRootPointer()->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst().data == 0);
+	assert(t1.GetRootPointer()->keys->GetFirst().left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst().right_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(1).left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(1).right_child == nullptr);
+	tmp = 2;
+	t1.Add(tmp);
+	assert(t1.GetRootPointer()->keys->GetCount() == 3);
+	assert(t1.GetRootPointer()->keys->Get(2).data == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst().left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst().right_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(1).left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(1).right_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(2).left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->Get(2).right_child == nullptr);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = 3;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	assert(t1.GetRootPointer()->keys->GetCount() == 1);
+	assert(t1.GetRootPointer()->keys->GetFirst().data == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetFirst().data == 0);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->Get(1).data == 1);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetFirst().left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetFirst().right_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->Get(1).left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->Get(1).right_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetCount() == 1);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetFirst().data == 3);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetFirst().left_child == nullptr);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetFirst().right_child == nullptr);
+	tmp = 4;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = 5;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = 6;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	assert(t1.GetRootPointer()->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst().data == 2);
+	assert(t1.GetRootPointer()->keys->Get(1).data == 5);
+	assert(t1.GetRootPointer()->keys->GetFirst().right_child == 
+			t1.GetRootPointer()->keys->Get(1).left_child);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->GetFirst().data == 0);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.left_child->keys->Get(1).data == 1);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->GetFirst().data == 3);
+	assert(t1.GetRootPointer()->keys->GetFirst()
+		.right_child->keys->Get(1).data == 4);
+	assert(t1.GetRootPointer()->keys->Get(1)
+		.right_child->keys->GetCount() == 1);
+	assert(t1.GetRootPointer()->keys->Get(1)
+		.right_child->keys->GetFirst().data == 6);
+	tmp = 4;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = 3;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = -1;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	tmp = -2;
+	t1.Add(tmp);
+	print_b_tree<int>(&t1);
+	std::cout << std::endl;
+	assert(t1.GetRootPointer()->keys->GetCount() == 1);
+	assert(t1.GetRootPointer()->keys->GetFirst().data == 4);
+	assert(t1.GetRootPointer()->keys->GetFirst().left_child->keys->GetCount() == 2);
+	assert(t1.GetRootPointer()->keys->GetFirst().right_child->keys->GetCount() == 1);
 }
 
 void test_all()

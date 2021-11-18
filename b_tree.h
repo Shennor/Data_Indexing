@@ -33,7 +33,7 @@ struct BTreeNode
 	BTreeNode(Sequence<Key<T>>* elements, BTreeNode<T>* element_parent = nullptr);
 };
 
-// m_ - minimal degree
+// m_ - maximal degree
 // every non-leaf and non-root_ node has x children
 // [m_/2] <= x < m_
 // root_ has at least 2 children (if it's not a leaf node)
@@ -63,6 +63,9 @@ public:
 	std::pair<BTreeNode<T>*, size_t> Search
 		(T& element, BTreeNode<T>* current_node);
 	std::pair<BTreeNode<T>*, size_t> Search(T& element);
+
+	// Destructor
+	~BTree();
 };
 
 template <class T>
@@ -166,6 +169,7 @@ BTree<T>::BTree(T element, size_t max)
 
 // Search
 
+// external comparer for T
 template<class T>
 int key_is_bigger(const Key<T>& a, const Key<T>& b)
 {
@@ -213,6 +217,12 @@ std::pair<BTreeNode<T>*, size_t> BTree<T>::Search(T& element)
 	return Search(element, root_);
 }
 
+template <class T>
+BTree<T>::~BTree()
+{
+	
+}
+
 // Decomposition
 
 template <class T>
@@ -242,7 +252,7 @@ void BTree<T>::Add(T& element)
 	{
 		// middle element
 		size_t middle_i = current_node->keys->GetCount() / 2;
-		// getting subsequences
+		// getting subsequence
 		Sequence<Key<T>>* seq1 = current_node->keys
 			->GetSubsequence(0, middle_i - 1);
 		Sequence<Key<T>>* seq2 = current_node->keys
@@ -254,7 +264,7 @@ void BTree<T>::Add(T& element)
 			current_node->parent = new BTreeNode<T>();
 			root_ = current_node->parent;
 		}
-		// creating new child nodes from subsequences
+		// creating new child nodes from each subsequence
 		BTreeNode<T>* left_node = new BTreeNode<T>(seq1, current_node->parent);
 		BTreeNode<T>* right_node = new BTreeNode<T>(seq2, current_node->parent);
 		// creating a new element key

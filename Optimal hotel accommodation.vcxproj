@@ -24,6 +24,7 @@
     <ProjectGuid>{89cd30a5-5e16-4d52-b745-10a67247e012}</ProjectGuid>
     <RootNamespace>Optimalhotelaccommodation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Data Indexing</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

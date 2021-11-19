@@ -5,6 +5,8 @@ namespace tests
 namespace b_tree
 {
 
+int three_way_cmp(const int& a, const int& b);
+
 void test_constructors(); 
 void test_search();
 void test_add();

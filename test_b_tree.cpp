@@ -8,6 +8,20 @@ namespace tests
 namespace b_tree
 {
 
+int three_way_cmp(const int& a, const int& b)
+{
+	if (a > b) return 1;
+	if (a == b) return 0;
+	return -1;
+}
+
+int three_way_cmp(const char& a, const char& b)
+{
+	if (a > b) return 1;
+	if (a == b) return 0;
+	return -1;
+}
+
 void test_constructors()
 {
 	BTree<int> t1(4);
@@ -42,6 +56,14 @@ void test_constructors()
 	assert(t4.GetRootPointer() != t2.GetRootPointer());
 }
 
+int three_way_cmp(int a, int b)
+{
+	if (a > b) return 1;
+	if (a == b) return 0;
+	return -1;
+}
+
+	
 void test_search()
 {
 	//          2
@@ -115,12 +137,12 @@ void test_search()
 	assert(res.second == 0);
 	a = 6;
 	res = t1.Search(a);
-	assert(key_is_bigger(res.first->keys->GetFirst(), t1.GetRootPointer()->keys->Get(0)
+	assert(res.first->keys->GetFirst().data == t1.GetRootPointer()->keys->Get(0)
 						.right_child->keys->Get(0)
-						.right_child->keys->GetFirst()) == 0);
-	assert(key_is_bigger(res.first->keys->GetFirst(), t1.GetRootPointer()->keys->Get(0)
+						.right_child->keys->GetFirst().data);
+	assert(res.first->keys->GetFirst().data == t1.GetRootPointer()->keys->Get(0)
 						.right_child->keys->Get(1)
-						.left_child->keys->GetFirst()) == 0);
+						.left_child->keys->GetFirst().data);
 	assert(res.second == 0);
 	a = 9;
 	res = t1.Search(a);

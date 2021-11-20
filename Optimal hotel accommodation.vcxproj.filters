@@ -24,6 +24,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="data_indexing.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="b_tree.h">
@@ -36,6 +39,9 @@
       <Filter>tests</Filter>
     </ClInclude>
     <ClInclude Include="i_dictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="data_indexing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -144,12 +144,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="data_indexing.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_b_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="b_tree.h" />
     <ClInclude Include="b_tree_i_o.h" />
+    <ClInclude Include="data_indexing.h" />
     <ClInclude Include="i_dictionary.h" />
     <ClInclude Include="test_b_tree.h" />
   </ItemGroup>

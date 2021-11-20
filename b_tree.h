@@ -1,10 +1,22 @@
-#pragma once
+// What is the B-Tree?
+// m_ - maximal degree
+// every non-leaf and non-root_ node has x children
+// [m_/2] <= x < m_
+// root_ has at least 2 children (if it's not a leaf node)
+// non-leaf node with k children contains k - 1 keys
+// all leafs must be on the same height
+// if Compare is Less we will have less or equal elements
+// in the left child and greater in right child
 
+// if left_child or right_child are nullptr
+// => this is leaf-node
+
+#pragma once
 #include "sequence.h"
 #include <utility>
 
 template <class T> struct BTreeNode;
-template<class T, class Compare> struct KeyComparator;
+template<class T, class Compare> struct KeyComparer;
 
 template <class T>
 struct Key
@@ -22,9 +34,9 @@ template<
 	class T,
 	class Compare = std::less<T>
 >
-struct KeyComparator
+struct KeyComparer
 {
-	KeyComparator<T, Compare>() = default;
+	KeyComparer<T, Compare>() = default;
 	static bool EqualOrGreater(const Key<T>& a, const Key<T>& b)
 	{
 		Compare comp;
@@ -50,19 +62,9 @@ struct BTreeNode
 	BTreeNode(const T& element, BTreeNode<T>* element_parent = nullptr);
 	BTreeNode(Sequence<Key<T>>* elements, BTreeNode<T>* element_parent = nullptr);
 
+	void DeleteNodesRecursive();
 	~BTreeNode();
 };
-
-// m_ - maximal degree
-// every non-leaf and non-root_ node has x children
-// [m_/2] <= x < m_
-// root_ has at least 2 children (if it's not a leaf node)
-// non-leaf node with k children contains k - 1 keys
-// all leafs must be on the same height
-// left subtree: less or equal, right subtree: bigger
-
-// if left_child or right_child are nullptr
-// => this is leaf-node
 
 template <
 	class T,
@@ -74,7 +76,7 @@ class BTree
 	BTreeNode<T>* root_;
 	
 public:
-	KeyComparator<T, Compare> cmp = KeyComparator<T, Compare>();
+	KeyComparer<T, Compare> comparer = KeyComparer<T, Compare>();
 
 	// Constructors
 	BTree(size_t max);
@@ -83,9 +85,8 @@ public:
 	BTree(BTree<T>& other);
 	
 	// Decomposition
-	const size_t GetM();
+	size_t GetM() const;
 	BTreeNode<T>* GetRootPointer();
-	void Add(T& element);
 
 	// Search
 	// Search an element or a place to insertion
@@ -93,6 +94,9 @@ public:
 		(T& element, BTreeNode<T>* current_node);
 	std::pair<BTreeNode<T>*, size_t> Search(T& element);
 
+	// Adding an element according to requirements
+	void Add(T& element);
+	
 	// Destructor
 	~BTree();
 };
@@ -153,15 +157,23 @@ BTreeNode<T>::BTreeNode(Sequence<Key<T>>* elements, BTreeNode<T>* element_parent
 }
 
 template <class T>
+void BTreeNode<T>::DeleteNodesRecursive()
+{
+	if (keys->GetCount() != 0) {
+		if (keys->Get(0).left_child != nullptr) keys->Get(0).left_child->DeleteNodesRecursive();
+		for (size_t i = 0; i < keys->GetCount(); ++i)
+		{
+			if (keys->Get(i).right_child != nullptr) keys->Get(i).right_child->DeleteNodesRecursive();
+		}
+	}
+	delete this;
+}
+
+template <class T>
 BTreeNode<T>::~BTreeNode()
 {
-	if (keys->GetCount() == 0) return;
-	if(keys->Get(0).left_child != nullptr) 	delete keys->Get(0).left_child;
-	for(size_t i = 0; i < keys->GetCount(); ++i)
-	{
-		if (keys->Get(i).right_child != nullptr) delete keys->Get(i).right_child;
-	}
-	delete keys;
+	delete this->keys;
+	keys = nullptr;
 }
 
 // BTree
@@ -194,11 +206,11 @@ BTree<T, Compare>::BTree(BTree<T>& other)
 {
 	m_ = other.m_;
 	root_ = new BTreeNode<T>(other.root_->keys);
-	cmp = other.cmp;
+	comparer = other.comparer;
 }
 
 template <class T, class Compare>
-const size_t BTree<T, Compare>::GetM()
+size_t BTree<T, Compare>::GetM() const
 {
 	return m_;
 }
@@ -219,7 +231,7 @@ std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search
 	if (current_node->keys->GetCount() == 0) return std::make_pair(current_node, 0);
 	// search in sequence
 	size_t first_equal_or_bigger = binary_search<Key<T>>(
-		*current_node->keys, element, 0, current_node->keys->GetCount() - 1, cmp.Less);
+		*current_node->keys, element, 0, current_node->keys->GetCount() - 1, comparer.Less);
 	// found element
 	if (current_node->keys->Get(first_equal_or_bigger).data == element)
 		return std::make_pair(current_node, first_equal_or_bigger);
@@ -256,7 +268,7 @@ std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search(T& element)
 template <class T, class Compare>
 BTree<T, Compare>::~BTree()
 {
-	delete root_;
+	root_->DeleteNodesRecursive();
 }
 
 // Decomposition
@@ -272,13 +284,12 @@ void BTree<T, Compare>::Add(T& element)
 	// Search for position of element in the tree
 	std::pair<BTreeNode<T>*, size_t> insert_position = Search(element);
 	// case when element already exists: we must to insert only in leaves
-	if (insert_position.first->keys->GetCount() > insert_position.second) {
-		while (insert_position.first->keys->Get(insert_position.second).data == element &&
-			insert_position.first->keys->Get(insert_position.second).left_child != nullptr)
-		{
-			insert_position = Search(element, insert_position.first->keys->
-				Get(insert_position.second).left_child);
-		}
+	while (insert_position.first->keys->GetCount() > insert_position.second &&
+		insert_position.first->keys->Get(insert_position.second).data == element &&
+		insert_position.first->keys->Get(insert_position.second).left_child != nullptr)
+	{
+		insert_position = Search(element, insert_position.first->keys->
+			Get(insert_position.second).left_child);
 	}
 	// insert element in found position
 	BTreeNode<T>* current_node = insert_position.first;
@@ -311,17 +322,14 @@ void BTree<T, Compare>::Add(T& element)
 		// Search for position to insert key in parent node
 		size_t parent_i = 0;
 		// if parent's sequence is empty => insert index is 0, else use binary search
-		if(current_node->parent->keys->GetCount() == 1)
-		{
-			if (current_node->parent->keys->Get(0).data < element)
-				parent_i = 1;
-		}
-		if(current_node->parent->keys->GetCount() > 1)
+		if(current_node->parent->keys->GetCount() > 0)
 		{
 			parent_i = binary_search<Key<T>>(*current_node->parent->keys, key.data, 0,
-				current_node->parent->keys->GetCount() - 1, cmp.Less);
+				current_node->parent->keys->GetCount() - 1, comparer.Less);
+			// case when all elements Less than new => insert to the end 
+			if (comparer.Less(current_node->parent->keys->Get(parent_i), key.data)) { parent_i++; }
 		}
-		// inserting key
+		// inserting key (there we have new pointers to the nodes)
 		current_node->parent->keys->InsertAt(key, parent_i);
 		// left and right neighbors must contain pointers to new child nodes
 		if (parent_i > 0)
@@ -329,7 +337,7 @@ void BTree<T, Compare>::Add(T& element)
 			// left neighbor
 			current_node->parent->keys->Set(parent_i - 1, Key<T>(
 				current_node->parent->keys->Get(parent_i - 1).data,
-				current_node->parent->keys->Get(parent_i - 1).left_child, left_node));
+				current_node->parent->keys->Get(parent_i - 1).left_child, current_node->parent->keys->Get(parent_i).left_child));
 		}
 		if (parent_i < current_node->parent->keys->GetCount() - 1)
 		{

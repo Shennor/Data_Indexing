@@ -35,7 +35,11 @@ int main()
 	t.Add(tmp);
 	print_b_tree<int>(&t);
 	std::cout << std::endl;
-	tmp = 50;
+	tmp = 5;
+	t.Add(tmp);
+	print_b_tree<int>(&t);
+	std::cout << std::endl;
+	tmp = -1;
 	t.Add(tmp);
 	print_b_tree<int>(&t);
 	std::cout << std::endl;
@@ -43,11 +47,7 @@ int main()
 	t.Add(tmp);
 	print_b_tree<int>(&t);
 	std::cout << std::endl;
-	tmp = -20;
-	t.Add(tmp);
-	print_b_tree<int>(&t);
-	std::cout << std::endl;
-	tmp = -1229;
+	tmp = -1;
 	t.Add(tmp);
 	print_b_tree<int>(&t);
 	std::cout << std::endl;

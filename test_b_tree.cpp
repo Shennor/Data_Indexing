@@ -55,7 +55,7 @@ void test_constructors()
 	assert(t4.GetRootPointer()->keys->GetFirst().right_child == nullptr);
 	assert(t4.GetRootPointer() != t2.GetRootPointer());
 }
-
+	
 int three_way_cmp(int a, int b)
 {
 	if (a > b) return 1;
@@ -63,7 +63,26 @@ int three_way_cmp(int a, int b)
 	return -1;
 }
 
-	
+void test_destructor()
+{
+	BTree<int> t1(4);
+	BTree<int> t2(3, 3);
+	int tmp = 2;
+	t2.Add(tmp);
+	tmp = 0;
+	t2.Add(tmp);
+	tmp = 10;
+	t2.Add(tmp);
+	tmp = 30;
+	t2.Add(tmp);
+	tmp = 24;
+	t2.Add(tmp);
+	tmp = 13;
+	t2.Add(tmp);
+	tmp = 35;
+	t2.Add(tmp);
+}
+
 void test_search()
 {
 	//          2
@@ -299,6 +318,7 @@ void test_add()
 void test_all()
 {
 	test_constructors();
+	test_destructor();
 	test_search();
 	test_add();
 }

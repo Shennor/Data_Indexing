@@ -82,6 +82,7 @@ public:
 	BTree(size_t max);
 	BTree(BTreeNode<T>& root, size_t max);
 	BTree(T element, size_t max);
+	BTree(Sequence<T>* seq, size_t max);
 	BTree(BTree<T>& other);
 	
 	// Decomposition
@@ -91,15 +92,22 @@ public:
 	// Search
 	// Search an element or a place to insertion
 	std::pair<BTreeNode<T>*, size_t> Search
-		(T& element, BTreeNode<T>* current_node);
-	std::pair<BTreeNode<T>*, size_t> Search(T& element);
+		(const T& element, BTreeNode<T>* current_node);
+	std::pair<BTreeNode<T>*, size_t> Search(const T& element);
 
 	// Adding an element according to requirements
-	void Add(T& element);
+	void Add(const T& element);
 	
 	// Destructor
 	~BTree();
 };
+
+// [begin_value, end_value)
+template<class T, class Compare = std::less<T>>
+Sequence<T>* interval_from_b_tree(BTree<T, Compare> tree,
+	const T& begin_value, const T& end_value);
+
+// Implementation
 
 template <class T>
 Key<T>::Key(const T& new_data, BTreeNode<T>* left, BTreeNode<T>* right)
@@ -202,6 +210,14 @@ BTree<T, Compare>::BTree(T element, size_t max)
 }
 
 template <class T, class Compare>
+BTree<T, Compare>::BTree(Sequence<T>* seq, size_t max)
+{
+	m_ = max;
+	root_ = new BTreeNode<T>;
+	for (size_t i = 0; i < seq->GetCount(); ++i) this->Add(seq->Get(i));
+}
+
+template <class T, class Compare>
 BTree<T, Compare>::BTree(BTree<T>& other)
 {
 	m_ = other.m_;
@@ -225,13 +241,13 @@ BTreeNode<T>* BTree<T, Compare>::GetRootPointer()
 
 template <class T, class Compare>
 std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search
-(T& element, BTreeNode<T>* current_node)
+(const T& element, BTreeNode<T>* current_node)
 {
 	// empty sequence case
 	if (current_node->keys->GetCount() == 0) return std::make_pair(current_node, 0);
 	// search in sequence
 	size_t first_equal_or_bigger = binary_search<Key<T>>(
-		*current_node->keys, element, 0, current_node->keys->GetCount() - 1, comparer.Less);
+		current_node->keys, element, 0, current_node->keys->GetCount() - 1, comparer.Less);
 	// found element
 	if (current_node->keys->Get(first_equal_or_bigger).data == element)
 		return std::make_pair(current_node, first_equal_or_bigger);
@@ -260,7 +276,7 @@ std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search
 }
 
 template <class T, class Compare>
-std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search(T& element)
+std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search(const T& element)
 {
 	return Search(element, root_);
 }
@@ -274,7 +290,7 @@ BTree<T, Compare>::~BTree()
 // Decomposition
 
 template <class T, class Compare>
-void BTree<T, Compare>::Add(T& element)
+void BTree<T, Compare>::Add(const T& element)
 {
 	if (root_->keys->GetCount() == 0)
 	{
@@ -324,7 +340,7 @@ void BTree<T, Compare>::Add(T& element)
 		// if parent's sequence is empty => insert index is 0, else use binary search
 		if(current_node->parent->keys->GetCount() > 0)
 		{
-			parent_i = binary_search<Key<T>>(*current_node->parent->keys, key.data, 0,
+			parent_i = binary_search<Key<T>>(current_node->parent->keys, key.data, 0,
 				current_node->parent->keys->GetCount() - 1, comparer.Less);
 			// case when all elements Less than new => insert to the end 
 			if (comparer.Less(current_node->parent->keys->Get(parent_i), key.data)) { parent_i++; }
@@ -351,4 +367,37 @@ void BTree<T, Compare>::Add(T& element)
 		// memory clearing
 		delete tmp;
 	}
+}
+
+template<class T>
+void interval_from_node_r(
+	BTreeNode<T>* current, Sequence<T>* res, const T& begin_value, const T& end_value, KeyComparer<T>& cmp)
+{
+	// returns first equal or bigger
+	size_t start_i = binary_search<Key<T>>(
+		current->keys, begin_value, 0, current->keys->GetCount() - 1, cmp.Less);
+	size_t end_i = binary_search<Key<T>>(
+		current->keys, end_value, 0, current->keys->GetCount() - 1, cmp.Less);
+	size_t i = start_i;
+	for (; i < end_i; ++i)
+	{
+		interval_from_node_r<T>(current->keys->Get(i).left_child,
+			res, begin_value, end_value, cmp);
+		res->Append(current->keys->Get(i).data);
+	}
+	++i;
+	interval_from_node_r<T>(current->keys->Get(i).left_child,
+		res, begin_value, end_value, cmp);
+	res->Append(current->keys->Get(i).data);
+}
+
+template <class T, class Compare = std::less<T>>
+Sequence<T>* interval_from_b_tree(
+	BTree<T, Compare> tree, const T& begin_value, const T& end_value)
+{
+	typedef bool (Compare::*operator_ptr)(const T& Left, const T& Right) const;
+	operator_ptr p = &Compare::operator();
+	Sequence<T>* res = new ArraySequence<T>{};
+	interval_from_node_r<T>(tree.GetRootPointer(), res, begin_value, end_value, tree.comparer);
+	return res;
 }

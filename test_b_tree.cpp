@@ -8,20 +8,6 @@ namespace tests
 namespace b_tree
 {
 
-int three_way_cmp(const int& a, const int& b)
-{
-	if (a > b) return 1;
-	if (a == b) return 0;
-	return -1;
-}
-
-int three_way_cmp(const char& a, const char& b)
-{
-	if (a > b) return 1;
-	if (a == b) return 0;
-	return -1;
-}
-
 void test_constructors()
 {
 	BTree<int> t1(4);
@@ -46,6 +32,28 @@ void test_constructors()
 	assert(t3.GetRootPointer()->keys->GetFirst().right_child == nullptr);
 	assert(t3.GetRootPointer() != t2.GetRootPointer());
 
+	const char* s = "mother";
+	Sequence<char>* a = new ArraySequence<char>(s, 6);
+	BTree<char, std::less<>> t5{ a, 6 };
+	char tmp = 'm';
+	std::pair<BTreeNode<char>*, size_t> res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 'm');
+	tmp = 'o';
+	res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 'o');
+	tmp = 't';
+	res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 't');
+	tmp = 'h';
+	res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 'h');
+	tmp = 'e';
+	res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 'e');
+	tmp = 'r';
+	res = t5.Search(tmp);
+	assert(res.first->keys->Get(res.second).data == 'r');
+	
 	BTree<char> t4 = t2;
 	assert(t4.GetM() == 2);
 	assert(t4.GetRootPointer()->keys->GetCount() == 1);
@@ -315,12 +323,45 @@ void test_add()
 	assert(t1.GetRootPointer()->keys->GetFirst().right_child->keys->GetCount() == 1);
 }
 
+void test_interval()
+{
+	BTree<int> t1(3, 3);
+	int tmp = 2;
+	t1.Add(tmp);
+	tmp = 0;
+	t1.Add(tmp);
+	tmp = 10;
+	t1.Add(tmp);
+	tmp = 30;
+	t1.Add(tmp);
+	tmp = 24;
+	t1.Add(tmp);
+	tmp = 13;
+	t1.Add(tmp);
+	tmp = 35;
+	t1.Add(tmp);
+	tmp = 14;
+	t1.Add(tmp);
+	print_b_tree(&t1);
+	tmp = 13;
+	t1.Add(tmp);
+	tmp = 20;
+	t1.Add(tmp);
+	print_b_tree(&t1);
+	Sequence<int>* seq = interval_from_b_tree<int>(t1, 11, 20);
+	assert(seq->GetCount() == 3);
+	assert(seq->Get(0) == 13);
+	assert(seq->Get(1) == 13);
+	assert(seq->Get(2) == 14);
+}
+	
 void test_all()
 {
 	test_constructors();
 	test_destructor();
 	test_search();
 	test_add();
+	test_interval();
 }
 
 

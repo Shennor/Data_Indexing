@@ -11,6 +11,7 @@ void test_constructors();
 void test_destructor();
 void test_search();
 void test_add();
+void test_interval();
 
 void test_all();
 

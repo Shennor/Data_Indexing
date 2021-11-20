@@ -1,34 +1,23 @@
 ﻿#pragma once
 #include "b_tree.h"
-
-// ФИО - 50 символов разделенных пробелом,
-// Дата рождения - ГГММДД - 8 цифр,
-// Пол - 'м' или 'ж' 1 символ
-// ...*Иванов Иван Иванович&&...&&/19971105/м/...
+#include "person.h"
 
 char statement_delimiter = '*';
 char empty_symbol = '&';
 char field_end_symbol = '/';
 
+// ФИО - 50 символов разделенных пробелом,
+// Дата рождения - ГГММДД - 8 цифр,
+// Пол - 'м' или 'ж' 1 символ
+// ...*Иванов Иван Иванович&&...&&/19971105/M/...
+
 // length including ['*','next*')
-size_t statement_length = 63;
+size_t name_length = 50;
+size_t statement_length = name_length + 13;
 
-template<class T>
-T read_data(std::ostream stream, size_t index);
+void print_data(const Person& data, const std::string& filename);
+void print_all(const Sequence<Person>& data, const std::string& filename);
 
-template<class T>
-void print_data(const T& data, std::istream stream);
-
-template<class T>
-void print_all(const Sequence<T>& data, std::istream stream);
-
-template<class T>
-Sequence<T> read_all(std::ostream stream);
-
-template<class T, class Compare = std::less<T>>
-BTree<T, Compare> make_tree(Sequence<T>& elements, Compare);
-
-template<class T, class Compare = std::less<T>>
-Sequence<T> interval_from_b_tree(BTree<T, Compare> tree,
-	const T& begin_value, const T& end_value);
-
+Person read_data(std::ifstream in);
+Person read_data_at(std::ifstream in, size_t index);
+Sequence<Person>* read_all(const std::string& filename);

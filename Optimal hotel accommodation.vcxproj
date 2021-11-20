@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClCompile Include="data_indexing.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="person.h" />
     <ClCompile Include="test_b_tree.cpp" />
   </ItemGroup>
   <ItemGroup>

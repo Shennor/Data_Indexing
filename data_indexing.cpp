@@ -1,45 +1,112 @@
 #include "data_indexing.h"
 
-template <class T, class Compare>
-BTree<T, Compare> make_tree(Sequence<T>& elements, Compare)
+#include <iostream>
+#include <fstream>
+
+
+void print_data(const Person& data, const std::string& filename)
 {
-	BTree<T, Compare> t{};
-	for (size_t i = 0; i < elements.GetCount(); ++i) t.Add(elements.Get(i));
-	return t;
+	std::ofstream out(filename, std::ios::app);
+	if (!out)
+	{
+		std::cerr << "File " << filename << " could not be opened for printing" << std::endl;
+		exit(1);
+	}
+	out << statement_delimiter;
+	if (data.name.full_name.length() > name_length) 
+		out << data.name.full_name.substr(0, name_length);
+	else
+	{
+		out << data.name.full_name;
+		out << std::string(name_length - data.name.full_name.length(), empty_symbol);
+	}
+	out << field_end_symbol;
+	out << data.birth_date.to_string() << field_end_symbol;
+	out << data.gender << field_end_symbol;
 }
 
-template<class T, class Compare>
-void interval_from_node_r(
-	BTreeNode<T> current, Sequence<T>& res, const T& begin_value, const T& end_value)
+void print_all(const Sequence<Person>& data, const std::string& filename)
 {
-	Compare c{};
-	// returns first equal or bigger
-	size_t start_i = binary_search(
-		current.keys, begin_value, 0, current.keys->GetCount() - 1, c);
-	size_t end_i = binary_search(
-		current.keys, end_value, 0, current.keys->GetCount() - 1, c);
-	size_t i = start_i;
-	for(; i < end_i; ++i)
+	for(size_t i = 0; i < data.GetCount(); ++i)
 	{
-		interval_from_node_r<T,Compare>(current.keys->Get(i).left_child, 
-			res, begin_value, end_value);
-		res.Append(current.keys->Get(i).data);
-	}
-	while(i + 1 < current.keys->GetCount() && 
-		current.keys->Get(i + 1) == end_value)
-	{
-		++i;
-		interval_from_node_r<T, Compare>(current.keys->Get(i).left_child, 
-			res, begin_value, end_value);
-		res.Append(current.keys->Get(i).data);
+		print_data(data.Get(i), filename);
 	}
 }
 
-template <class T, class Compare>
-Sequence<T> interval_from_b_tree(
-	BTree<T, Compare> tree, const T& begin_value, const T& end_value)
+Person read_data(std::ifstream in)
 {
-	Sequence<T> res{};
-	interval_from_node_r<T, Compare>(tree.GetRootPointer(), res, begin_value, end_value);
+	if (!in.is_open())
+	{
+		std::cerr << "Stream is not opened for reading" << std::endl;
+		exit(1);
+	}
+	if (in.peek() != statement_delimiter)
+		throw std::invalid_argument("read_data: wrong structure of the file");
+	in.ignore();
+	Person person;
+	while(in.peek() != empty_symbol && in.peek() != field_end_symbol)
+	{
+		char t;
+		in >> t;
+		person.name.full_name += t;
+	}
+	while (in.peek() != field_end_symbol)
+	{
+		in.ignore();
+	}
+	in.ignore();
+	std::string tmp;
+	for(int i = 0; i < 4; ++i)
+	{
+		char t;
+		in >> t;
+		tmp += t;
+	}
+	person.birth_date.year = stoi(tmp);
+	tmp = "";
+	for (int i = 0; i < 2; ++i)
+	{
+		char t;
+		in >> t;
+		tmp += t;
+	}
+	person.birth_date.month = stoi(tmp);
+	tmp = "";
+	for (int i = 0; i < 2; ++i)
+	{
+		char t;
+		in >> t;
+		tmp += t;
+	}
+	person.birth_date.day = stoi(tmp);
+	in.ignore();
+	char t;
+	in >> t;
+	person.gender = Gender(t);
+	return person;
+}
+
+Person read_data_at(std::ifstream in, size_t index)
+{
+	for (size_t i = 1; i < index; ++i)
+	{
+		in.ignore(statement_length);
+	}
+	return read_data(std::move(in));
+}
+
+Sequence<Person>* read_all(const std::string& filename)
+{
+	std::ifstream in(filename);
+	if (!in)
+	{
+		std::cerr << "File " << filename << " could not be opened for reading" << std::endl;
+		exit(1);
+	}
+	Sequence<Person>* res = new ArraySequence<Person>;
+	while (!in.eof()) {
+		Person p = read_data(std::move(in));
+		res->Append(p);
+	}
 	return res;
 }

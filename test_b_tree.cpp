@@ -238,12 +238,8 @@ void test_add()
 	assert(t1.GetRootPointer()->keys->Get(1).right_child == nullptr);
 	assert(t1.GetRootPointer()->keys->Get(2).left_child == nullptr);
 	assert(t1.GetRootPointer()->keys->Get(2).right_child == nullptr);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = 3;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	assert(t1.GetRootPointer()->keys->GetCount() == 1);
 	assert(t1.GetRootPointer()->keys->GetFirst().data == 2);
 	assert(t1.GetRootPointer()->keys->GetFirst()
@@ -270,16 +266,10 @@ void test_add()
 		.right_child->keys->GetFirst().right_child == nullptr);
 	tmp = 4;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = 5;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = 6;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	assert(t1.GetRootPointer()->keys->GetCount() == 2);
 	assert(t1.GetRootPointer()->keys->GetFirst().data == 2);
 	assert(t1.GetRootPointer()->keys->Get(1).data == 5);
@@ -303,20 +293,12 @@ void test_add()
 		.right_child->keys->GetFirst().data == 6);
 	tmp = 4;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = 3;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = -1;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	tmp = -2;
 	t1.Add(tmp);
-	print_b_tree<int>(&t1);
-	std::cout << std::endl;
 	assert(t1.GetRootPointer()->keys->GetCount() == 1);
 	assert(t1.GetRootPointer()->keys->GetFirst().data == 4);
 	assert(t1.GetRootPointer()->keys->GetFirst().left_child->keys->GetCount() == 2);
@@ -338,21 +320,37 @@ void test_interval()
 	t1.Add(tmp);
 	tmp = 13;
 	t1.Add(tmp);
+	tmp = 13;
+	t1.Add(tmp);
 	tmp = 35;
 	t1.Add(tmp);
 	tmp = 14;
 	t1.Add(tmp);
-	print_b_tree(&t1);
-	tmp = 13;
-	t1.Add(tmp);
 	tmp = 20;
 	t1.Add(tmp);
-	print_b_tree(&t1);
 	Sequence<int>* seq = interval_from_b_tree<int>(t1, 11, 20);
 	assert(seq->GetCount() == 3);
 	assert(seq->Get(0) == 13);
 	assert(seq->Get(1) == 13);
 	assert(seq->Get(2) == 14);
+	
+	seq = interval_from_b_tree<int>(t1, 35, 35);
+	assert(seq->GetCount() == 0);
+	
+	seq = interval_from_b_tree<int>(t1, 0, 2);
+	assert(seq->GetCount() == 2);
+	assert(seq->Get(0) == 0);
+	assert(seq->Get(1) == 2);
+	
+	seq = interval_from_b_tree<int>(t1, 10, 31);
+	assert(seq->GetCount() == 7);
+	assert(seq->Get(0) == 10);
+	assert(seq->Get(1) == 13);
+	assert(seq->Get(2) == 13);
+	assert(seq->Get(3) == 14);
+	assert(seq->Get(4) == 20);
+	assert(seq->Get(5) == 24);
+	assert(seq->Get(6) == 30);
 }
 	
 void test_all()

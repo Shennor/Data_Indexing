@@ -15,6 +15,9 @@
 #include "sequence.h"
 #include <utility>
 
+#include <iostream>
+
+
 template <class T> struct BTreeNode;
 template<class T, class Compare> struct KeyComparer;
 
@@ -102,9 +105,10 @@ public:
 	~BTree();
 };
 
+
 // [begin_value, end_value)
 template<class T, class Compare = std::less<T>>
-Sequence<T>* interval_from_b_tree(BTree<T, Compare> tree,
+Sequence<T>* interval_from_b_tree(BTree<T, Compare>& tree,
 	const T& begin_value, const T& end_value);
 
 // Implementation
@@ -330,6 +334,21 @@ void BTree<T, Compare>::Add(const T& element)
 		// creating new child nodes from each subsequence
 		BTreeNode<T>* left_node = new BTreeNode<T>(seq1, current_node->parent);
 		BTreeNode<T>* right_node = new BTreeNode<T>(seq2, current_node->parent);
+		// updating seq1 and seq2 elements' children' parents as left_node and right_node
+		if (left_node->keys->GetCount() != 0 && left_node->keys->GetFirst().left_child != nullptr)
+			left_node->keys->GetFirst().left_child->parent = left_node;
+		for(size_t i = 0; i < left_node->keys->GetCount(); ++i)
+		{
+			if(left_node->keys->Get(i).right_child != nullptr)
+				left_node->keys->Get(i).right_child->parent = left_node;
+		}
+		if (right_node->keys->GetCount() != 0 && right_node->keys->GetFirst().left_child != nullptr)
+			right_node->keys->GetFirst().left_child->parent = right_node;
+		for (size_t i = 0; i < right_node->keys->GetCount(); ++i)
+		{
+			if (right_node->keys->Get(i).right_child != nullptr)
+				right_node->keys->Get(i).right_child->parent = right_node;
+		}
 		// creating a new element key
 		Key<T> key = Key<T>(
 			current_node->keys->Get(middle_i).data,
@@ -347,6 +366,8 @@ void BTree<T, Compare>::Add(const T& element)
 		}
 		// inserting key (there we have new pointers to the nodes)
 		current_node->parent->keys->InsertAt(key, parent_i);
+		//current_node->parent->keys->Get(parent_i).left_child->parent = current_node->parent;
+		//current_node->parent->keys->Get(parent_i).right_child->parent = current_node->parent;
 		// left and right neighbors must contain pointers to new child nodes
 		if (parent_i > 0)
 		{
@@ -373,11 +394,30 @@ template<class T>
 void interval_from_node_r(
 	BTreeNode<T>* current, Sequence<T>* res, const T& begin_value, const T& end_value, KeyComparer<T>& cmp)
 {
+	if (current == nullptr) return;
 	// returns first equal or bigger
 	size_t start_i = binary_search<Key<T>>(
 		current->keys, begin_value, 0, current->keys->GetCount() - 1, cmp.Less);
 	size_t end_i = binary_search<Key<T>>(
 		current->keys, end_value, 0, current->keys->GetCount() - 1, cmp.Less);
+	if(start_i == end_i)
+	{
+		if(cmp.Less(current->keys->Get(start_i), begin_value))
+			interval_from_node_r<T>(current->keys->Get(start_i).right_child,
+			res, begin_value, end_value, cmp);
+		else if(cmp.Less(end_value, current->keys->Get(start_i)))
+			interval_from_node_r<T>(current->keys->Get(start_i).left_child,
+				res, begin_value, end_value, cmp);
+		else
+		{
+			interval_from_node_r<T>(current->keys->Get(start_i).left_child,
+				res, begin_value, end_value, cmp);
+			res->Append(current->keys->Get(start_i).data);
+			interval_from_node_r<T>(current->keys->Get(start_i).right_child,
+				res, begin_value, end_value, cmp);
+		}
+		return;
+	}
 	size_t i = start_i;
 	for (; i < end_i; ++i)
 	{
@@ -385,19 +425,28 @@ void interval_from_node_r(
 			res, begin_value, end_value, cmp);
 		res->Append(current->keys->Get(i).data);
 	}
-	++i;
 	interval_from_node_r<T>(current->keys->Get(i).left_child,
 		res, begin_value, end_value, cmp);
-	res->Append(current->keys->Get(i).data);
+	if (cmp.Less(current->keys->Get(i), end_value)) {
+		if (!cmp.Less(current->keys->Get(i), begin_value))
+		{
+			res->Append(current->keys->Get(i).data);
+		}
+		interval_from_node_r<T>(current->keys->Get(i).right_child,
+			res, begin_value, end_value, cmp);
+	}
 }
 
 template <class T, class Compare = std::less<T>>
 Sequence<T>* interval_from_b_tree(
-	BTree<T, Compare> tree, const T& begin_value, const T& end_value)
+	BTree<T, Compare>& tree, const T& begin_value, const T& end_value)
 {
 	typedef bool (Compare::*operator_ptr)(const T& Left, const T& Right) const;
 	operator_ptr p = &Compare::operator();
 	Sequence<T>* res = new ArraySequence<T>{};
-	interval_from_node_r<T>(tree.GetRootPointer(), res, begin_value, end_value, tree.comparer);
+	// if begin_value and end_value are equal -> [i, i) = {}
+	if(tree.comparer.Less(begin_value, end_value) || 
+		tree.comparer.Less(end_value, begin_value))
+		interval_from_node_r<T>(tree.GetRootPointer(), res, begin_value, end_value, tree.comparer);
 	return res;
 }

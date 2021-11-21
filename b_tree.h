@@ -252,13 +252,14 @@ std::pair<BTreeNode<T>*, size_t> BTree<T, Compare>::Search
 	size_t first_equal_or_bigger = binary_search<Key<T>>(
 		current_node->keys, element, 0, current_node->keys->GetCount() - 1, comparer.Less);
 	// found element
-	if (current_node->keys->Get(first_equal_or_bigger).data == element)
+	if (!this->cmp(current_node->keys->Get(first_equal_or_bigger).data, element) &&
+		!this->cmp(element, current_node->keys->Get(first_equal_or_bigger).data))
 		return std::make_pair(current_node, first_equal_or_bigger);
 	// this is leaf node
 	if (current_node->keys->Get(first_equal_or_bigger).left_child == nullptr &&
 		current_node->keys->Get(first_equal_or_bigger).right_child == nullptr) {
 		// case when found last element in sequence and it's less than element
-		if (current_node->keys->Get(first_equal_or_bigger).data < element)
+		if (this->cmp(current_node->keys->Get(first_equal_or_bigger).data, element))
 			return std::make_pair(current_node, first_equal_or_bigger + 1);
 		return std::make_pair(current_node, first_equal_or_bigger);
 	}
@@ -304,7 +305,8 @@ void BTree<T, Compare>::Add(const T& element)
 	std::pair<BTreeNode<T>*, size_t> insert_position = Search(element);
 	// case when element already exists: we must to insert only in leaves
 	while (insert_position.first->keys->GetCount() > insert_position.second &&
-		insert_position.first->keys->Get(insert_position.second).data == element &&
+		!this->cmp(insert_position.first->keys->Get(insert_position.second).data, element) &&
+		!this->cmp(element, insert_position.first->keys->Get(insert_position.second).data) &&
 		insert_position.first->keys->Get(insert_position.second).left_child != nullptr)
 	{
 		insert_position = Search(element, insert_position.first->keys->
@@ -389,9 +391,9 @@ void BTree<T, Compare>::Add(const T& element)
 	}
 }
 
-template<class T>
+template<class T, class Compare>
 void interval_from_node_r(
-	BTreeNode<T>* current, Sequence<T>* res, const T& begin_value, const T& end_value, KeyComparer<T>& cmp)
+	BTreeNode<T>* current, Sequence<T>* res, const T& begin_value, const T& end_value, KeyComparer<T, Compare>& cmp)
 {
 	if (current == nullptr) return;
 	// returns first equal or bigger
@@ -446,6 +448,6 @@ Sequence<T>* interval_from_b_tree(
 	// if begin_value and end_value are equal -> [i, i) = {}
 	if(tree.comparer.Less(begin_value, end_value) || 
 		tree.comparer.Less(end_value, begin_value))
-		interval_from_node_r<T>(tree.GetRootPointer(), res, begin_value, end_value, tree.comparer);
+		interval_from_node_r<T, Compare>(tree.GetRootPointer(), res, begin_value, end_value, tree.comparer);
 	return res;
 }

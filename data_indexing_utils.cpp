@@ -1,18 +1,25 @@
-#include "data_indexing_utils.h"
+﻿#include "data_indexing_utils.h"
 
 #include <iostream>
 #include <fstream>
 
 namespace data_indexing {
 
-	void print_data(const Person& data, const std::string& filename)
+	char statement_delimiter = '*';
+	char empty_symbol = '&';
+	char field_end_symbol = '/';
+
+	// ФИО - 50 символов разделенных пробелом,
+	// Дата рождения - ГГММДД - 8 цифр,
+	// Пол - 'м' или 'ж' 1 символ
+	// ...*Иванов Иван Иванович&&...&&/19971105/M/...
+
+	// length including ['*','next*')
+	size_t name_length = 50;
+	size_t statement_length = name_length + 13;
+
+	std::ofstream print_data(const Person& data, std::ofstream out)
 	{
-		std::ofstream out(filename, std::ios::app);
-		if (!out)
-		{
-			std::cerr << "File " << filename << " could not be opened for printing" << std::endl;
-			exit(1);
-		}
 		out << statement_delimiter;
 		if (data.name.full_name.length() > name_length)
 			out << data.name.full_name.substr(0, name_length);
@@ -24,17 +31,19 @@ namespace data_indexing {
 		out << field_end_symbol;
 		out << data.birth_date.to_string() << field_end_symbol;
 		out << data.gender << field_end_symbol;
+		return out;
 	}
 
-	void print_all(const Sequence<Person>& data, const std::string& filename)
+	std::ofstream print_all(const Sequence<Person>& data, std::ofstream out)
 	{
 		for (size_t i = 0; i < data.GetCount(); ++i)
 		{
-			print_data(data.Get(i), filename);
+			out = print_data(data.Get(i), move(out));
 		}
+		return out;
 	}
 
-	Person read_data(std::ifstream in)
+	std::pair<Person, std::ifstream> read_data(std::ifstream in)
 	{
 		if (!in.is_open())
 		{
@@ -84,10 +93,10 @@ namespace data_indexing {
 		char t;
 		in >> t;
 		person.gender = Gender(t);
-		return person;
+		return std::make_pair(person, in);
 	}
 
-	Person read_data_at(std::ifstream in, size_t index)
+	std::pair<Person, std::ifstream> read_data_at(std::ifstream in, size_t index)
 	{
 		for (size_t i = 1; i < index; ++i)
 		{
@@ -96,17 +105,21 @@ namespace data_indexing {
 		return read_data(std::move(in));
 	}
 
-	Sequence<Person>* read_data_by_indices(std::ifstream in, Sequence<size_t>* indices)
+	std::pair<Sequence<Person>*, std::ifstream> read_data_by_indices(std::ifstream in, Sequence<size_t>* indices)
 	{
 		Sequence<Person>* res = new ArraySequence<Person>();
-		if (indices->GetCount() == 0) return res;
-		res->Append(read_data_at(std::move(in), indices->Get(0)));
+		if (indices->GetCount() == 0) return std::make_pair(res, in);
+		auto a = read_data_at(std::move(in), indices->Get(0));
+		res->Append(a.first);
+		in = a.second;
 		size_t diff_index;
 		for (size_t i = 1; i < indices->GetCount(); ++i) {
 			diff_index = indices->Get(i) - indices->Get(i - 1);
-			res->Append(read_data_at(std::move(in), diff_index));
+			auto a = read_data_at(std::move(in), diff_index);
+			res->Append(a.first);
+			in = a.second;
 		}
-		return res;
+		return std::make_pair(res, in);
 	}
 
 	Sequence<Person>* read_all(const std::string& filename)
@@ -120,7 +133,9 @@ namespace data_indexing {
 		}
 		Sequence<Person>* res = new ArraySequence<Person>;
 		while (!in.eof()) {
-			Person p = read_data(std::move(in));
+			auto a = read_data(std::move(in));
+			Person p = a.first;
+			in = a.second;
 			res->Append(p);
 		}
 		in.close();

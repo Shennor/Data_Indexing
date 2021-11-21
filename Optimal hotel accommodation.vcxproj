@@ -158,6 +158,9 @@
     <ClInclude Include="test_b_tree.h" />
     <ClInclude Include="u_interface_data_indexing.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="person.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

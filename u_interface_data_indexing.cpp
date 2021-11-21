@@ -3,6 +3,7 @@
 #include "person.h"
 #include "fstream"
 #include  <iostream>
+
 using namespace std;
 
 namespace u_interface_data_indexing
@@ -58,6 +59,7 @@ namespace u_interface_data_indexing
 		size_t index = 0;
 		Sequence<Person>* seq = nullptr;
 
+		connected_index() = default;
 		connected_index(size_t new_index, Sequence<Person>* new_seq )
 		{
 			index = new_index;
@@ -176,6 +178,41 @@ namespace u_interface_data_indexing
 			menu_res = menu();
 			cout << endl;
 		}
+	}
+
+	void write_persons_from_console()
+	{
+		cout << "How many persons do you want to write?\n";
+		size_t cnt;
+		cin >> cnt;
+		ofstream out;
+		out.open(filename);
+		if(!out)
+		{
+			cout << "Can't open file\n";
+		}
+		cout << "Enter name, birth date and gender\n";
+		for(size_t i = 0; i < cnt; ++i)
+		{
+			Person p;
+			cout << i + 1 << endl;
+			string name;
+			cin >> name;
+			p.name.full_name = name;
+			unsigned int date;
+			cin >> date;
+			date = date % 100000000;
+			p.birth_date.year = date / 10000;
+			date = date / 10000;
+			p.birth_date.month = date / 100;
+			date = date / 100;
+			p.birth_date.day = date;
+			char gender;
+			cin >> gender;
+			p.gender = Gender(gender);
+			out = data_indexing::print_data(p, move(out));
+		}
+		out.close();
 	}
 
 }

@@ -24,11 +24,14 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="data_indexing.cpp">
+    <ClCompile Include="data_indexing_utils.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="person.h">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="u_interface_data_indexing.cpp">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,7 +47,10 @@
     <ClInclude Include="i_dictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="data_indexing.h">
+    <ClInclude Include="data_indexing_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="u_interface_data_indexing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

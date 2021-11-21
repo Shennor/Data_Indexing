@@ -15,8 +15,6 @@
 #include "sequence.h"
 #include <utility>
 
-#include <iostream>
-
 
 template <class T> struct BTreeNode;
 template<class T, class Compare> struct KeyComparer;
@@ -80,6 +78,7 @@ class BTree
 	
 public:
 	KeyComparer<T, Compare> comparer = KeyComparer<T, Compare>();
+	Compare cmp{};
 
 	// Constructors
 	BTree(size_t max);

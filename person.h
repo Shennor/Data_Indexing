@@ -51,4 +51,28 @@ struct Person
 	Name name;
 	Date birth_date;
 	Gender gender;
+
+	std::string to_string() const 
+	{
+		std::string res = "";
+		res += name.full_name + " ";
+		res += birth_date.to_string();
+		res += gender;
+		return res;
+	}
+};
+
+// Comparers
+
+
+struct person_name_less {
+	bool operator()(const Person& Left, const Person& Right) const {
+		return Left.name < Right.name;
+	}
+};
+
+struct person_birth_date_less {
+	bool operator()(const Person& Left, const Person& Right) const {
+		return Left.birth_date < Right.birth_date;
+	}
 };

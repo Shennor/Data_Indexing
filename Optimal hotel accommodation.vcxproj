@@ -154,7 +154,6 @@
     <ClInclude Include="b_tree.h" />
     <ClInclude Include="b_tree_i_o.h" />
     <ClInclude Include="data_indexing_utils.h" />
-    <ClInclude Include="i_dictionary.h" />
     <ClInclude Include="test_b_tree.h" />
     <ClInclude Include="u_interface_data_indexing.h" />
   </ItemGroup>

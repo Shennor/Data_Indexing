@@ -54,16 +54,14 @@ struct Person
 
 	std::string to_string() const 
 	{
-		std::string res = "";
-		res += name.full_name + " ";
-		res += birth_date.to_string();
+		std::string res = name.full_name + " ";
+		res += birth_date.to_string() + " ";
 		res += gender;
 		return res;
 	}
 };
 
 // Comparers
-
 
 struct person_name_less {
 	bool operator()(const Person& Left, const Person& Right) const {

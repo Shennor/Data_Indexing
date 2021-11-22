@@ -13,6 +13,6 @@ struct less {
 int main()
 {
 	u_interface_data_indexing::write_persons_from_console();
-	//u_interface_data_indexing::data_indexing_interface();
+	u_interface_data_indexing::data_indexing_interface();
 	return 0;
 }

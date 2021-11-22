@@ -37,20 +37,21 @@ namespace u_interface_data_indexing
 
 	void print_some_data(Sequence<Person>* persons)
 	{
-		size_t n = 101;
-		while (n > 100) {
-			cout << "Enter number of elements to print >>";
+		cout << "We have now " << persons->GetCount() << " persons in base.\n";
+		size_t n = persons->GetCount() + 1;
+		while (n > persons->GetCount()) {
+			cout << "Enter number of elements to print >> ";
 			cin >> n;
 			cout << endl;
-			if (n <= 100) break;
-			cout << "Number must be from 0 to 100.\n";
+			if (n <= persons->GetCount()) break;
+			cout << "Number mustn't be more than person count.\n";
 		}
 		cout << "First " << n << " persons:\n";
 		for(size_t i = 0; i < n; ++i)
 		{
-			cout << persons->Get(i).name.full_name << " "
+			cout << i << " - " << persons->Get(i).name.full_name << " "
 			<< persons->Get(i).birth_date.to_string() << " "
-			<< persons->Get(i).gender << endl;
+			<< char(persons->Get(i).gender) << endl;
 		}
 	}
 	
@@ -90,13 +91,13 @@ namespace u_interface_data_indexing
 	{
 		size_t n = 0;
 		while (n < 1) {
-			cout << "Enter number of intervals (al least 1) >>";
+			cout << "Enter number of intervals (al least 1) >> ";
 			cin >> n;
 			cout << endl;
 		}
 		Sequence<connected_index>* selected_indices = new ArraySequence<connected_index>();
 		cout << "Enter non-overlapping intervals of indices:\n";
-		cout << "1\n";
+		cout << "1 interval:\n";
 		size_t begin;
 		size_t end;
 		cin >> begin;
@@ -108,19 +109,19 @@ namespace u_interface_data_indexing
 		{
 			selected_indices->Append(found->Get(i));
 		}
-		string new_begin;
-		string new_end;
+		size_t new_begin;
+		size_t new_end;
 		for (size_t i = 1; i < n; ++i)
 		{
-			cout << i + 1 << endl;
+			cout << i + 1 << " interval:" << endl;
 			cin >> new_begin;
 			cin >> new_end;
-			connected_index a{ begin, persons };
-			connected_index b{ end, persons };
+			connected_index a{ new_begin, persons };
+			connected_index b{ new_end, persons };
 			found = interval_from_b_tree(tree, a, b);
-			for (size_t i = 0; i < found->GetCount(); ++i)
+			for (size_t j = 0; j < found->GetCount(); ++j)
 			{
-				selected_indices->Append(found->Get(i));
+				selected_indices->Append(found->Get(j));
 			}
 		}
 		return selected_indices;
@@ -129,7 +130,7 @@ namespace u_interface_data_indexing
 	void data_indexing_interface()
 	{
 		// reading data from file
-		cout << filename;
+		cout << filename << endl;
 		Sequence<Person>* persons = data_indexing::read_all(filename);
 		Sequence<connected_index>* indices = new ArraySequence<connected_index>();
 		for(size_t i = 0; i < persons->GetCount(); ++i)
@@ -147,6 +148,7 @@ namespace u_interface_data_indexing
 			exit(1);
 		}*/
 		cout << "Welcome to Data Indexing User Interface.\n";
+		cout << "We have now " << persons->GetCount() << " persons in base.\n";
 		int menu_res = menu();
 		while (menu_res != 4)
 		{
@@ -185,34 +187,28 @@ namespace u_interface_data_indexing
 		cout << "How many persons do you want to write?\n";
 		size_t cnt;
 		cin >> cnt;
-		ofstream out;
-		out.open(filename);
-		if(!out)
-		{
-			cout << "Can't open file\n";
-		}
 		cout << "Enter name, birth date and gender\n";
 		for(size_t i = 0; i < cnt; ++i)
 		{
 			Person p;
 			cout << i + 1 << endl;
 			string name;
-			cin >> name;
+			cin.ignore();
+			std::getline(cin, name);
 			p.name.full_name = name;
 			unsigned int date;
 			cin >> date;
 			date = date % 100000000;
 			p.birth_date.year = date / 10000;
-			date = date / 10000;
+			date = date % 10000;
 			p.birth_date.month = date / 100;
-			date = date / 100;
+			date = date % 100;
 			p.birth_date.day = date;
 			char gender;
 			cin >> gender;
 			p.gender = Gender(gender);
-			out = data_indexing::print_data(p, move(out));
+			data_indexing::print_data(p, filename);
 		}
-		out.close();
 	}
 
 }

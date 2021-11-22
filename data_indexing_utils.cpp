@@ -16,10 +16,12 @@ namespace data_indexing {
 
 	// length including ['*','next*')
 	size_t name_length = 50;
-	size_t statement_length = name_length + 13;
+	size_t statement_length = name_length + 14;
 
-	std::ofstream print_data(const Person& data, std::ofstream out)
+	void print_data(const Person& data, const std::string& filename)
 	{
+		std::ofstream out;
+		out.open(filename, std::ios::app);
 		out << statement_delimiter;
 		if (data.name.full_name.length() > name_length)
 			out << data.name.full_name.substr(0, name_length);
@@ -31,19 +33,18 @@ namespace data_indexing {
 		out << field_end_symbol;
 		out << data.birth_date.to_string() << field_end_symbol;
 		out << data.gender << field_end_symbol;
-		return out;
+		out.close();
 	}
 
-	std::ofstream print_all(const Sequence<Person>& data, std::ofstream out)
+	void print_all(const Sequence<Person>& data, const std::string& filename)
 	{
 		for (size_t i = 0; i < data.GetCount(); ++i)
 		{
-			out = print_data(data.Get(i), move(out));
+			print_data(data.Get(i), filename);
 		}
-		return out;
 	}
 
-	std::pair<Person, std::ifstream> read_data(std::ifstream in)
+	Person read_data(std::ifstream in)
 	{
 		if (!in.is_open())
 		{
@@ -90,56 +91,57 @@ namespace data_indexing {
 		}
 		person.birth_date.day = stoi(tmp);
 		in.ignore();
-		char t;
+		short t;
 		in >> t;
 		person.gender = Gender(t);
-		return std::make_pair(person, in);
+		in.close();
+		return person;
 	}
 
-	std::pair<Person, std::ifstream> read_data_at(std::ifstream in, size_t index)
+	Person read_data_at(const std::string& filename, size_t index)
 	{
-		for (size_t i = 1; i < index; ++i)
+		std::ifstream in;
+		in.open(filename);
+		if(!in || in.peek() != '*')
+		{
+			std::cerr << "Wrong data format";
+			exit(1);
+		}
+		for (size_t i = 0; i < index; ++i)
 		{
 			in.ignore(statement_length);
 		}
+		if (in.eof()) throw std::invalid_argument("read index out of range");
 		return read_data(std::move(in));
 	}
 
-	std::pair<Sequence<Person>*, std::ifstream> read_data_by_indices(std::ifstream in, Sequence<size_t>* indices)
+	Sequence<Person>* read_data_by_indices(const std::string& filename, Sequence<size_t>* indices)
 	{
 		Sequence<Person>* res = new ArraySequence<Person>();
-		if (indices->GetCount() == 0) return std::make_pair(res, in);
-		auto a = read_data_at(std::move(in), indices->Get(0));
-		res->Append(a.first);
-		in = a.second;
-		size_t diff_index;
+		if (indices->GetCount() == 0) return res;
 		for (size_t i = 1; i < indices->GetCount(); ++i) {
-			diff_index = indices->Get(i) - indices->Get(i - 1);
-			auto a = read_data_at(std::move(in), diff_index);
-			res->Append(a.first);
-			in = a.second;
+			res->Append(read_data_at(filename, indices->Get(0)));
 		}
-		return std::make_pair(res, in);
+		return res;
 	}
 
 	Sequence<Person>* read_all(const std::string& filename)
 	{
-		std::ifstream in;
-		in.open(filename);
-		if (!in)
-		{
-			std::cerr << "File " << filename << " could not be opened for reading" << std::endl;
-			exit(1);
-		}
 		Sequence<Person>* res = new ArraySequence<Person>;
-		while (!in.eof()) {
-			auto a = read_data(std::move(in));
-			Person p = a.first;
-			in = a.second;
+		size_t i = 0;
+		Person p;
+		while (true) {
+			try
+			{
+				p = read_data_at(filename, i);
+			}
+			catch(std::invalid_argument& e)
+			{
+				return res;
+			}
 			res->Append(p);
+			++i;
 		}
-		in.close();
-		return res;
 	}
 
 }

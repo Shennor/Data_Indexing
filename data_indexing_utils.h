@@ -4,12 +4,12 @@
 
 namespace data_indexing
 {
-	std::ofstream print_data(const Person& data, std::ofstream out);
-	std::ofstream print_all(const Sequence<Person>& data, std::ofstream out);
+	void print_data(const Person& data, const std::string& filename);
+	void print_all(const Sequence<Person>& data, const std::string& filename);
 
-	std::pair<Person, std::ifstream> read_data(std::ifstream in);
-	std::pair<Person, std::ifstream> read_data_at(std::ifstream in, size_t index);
-	std::pair<Sequence<Person>*, std::ifstream> read_data_by_indices(std::ifstream in, Sequence<size_t>* indices);
+	Person read_data(std::ifstream in);
+	Person read_data_at(const std::string& filename, size_t index);
+	Sequence<Person>* read_data_by_indices(const std::string& filename, Sequence<size_t>* indices);
 	Sequence<Person>* read_all(const std::string& filename);
 
 }

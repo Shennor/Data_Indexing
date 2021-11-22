@@ -442,8 +442,8 @@ template <class T, class Compare = std::less<T>>
 Sequence<T>* interval_from_b_tree(
 	BTree<T, Compare>& tree, const T& begin_value, const T& end_value)
 {
-	typedef bool (Compare::*operator_ptr)(const T& Left, const T& Right) const;
-	operator_ptr p = &Compare::operator();
+	//typedef bool (Compare::*operator_ptr)(const T& Left, const T& Right) const;
+	//operator_ptr p = &Compare::operator();
 	Sequence<T>* res = new ArraySequence<T>{};
 	// if begin_value and end_value are equal -> [i, i) = {}
 	if(tree.comparer.Less(begin_value, end_value) || 

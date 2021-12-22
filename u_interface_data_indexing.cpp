@@ -126,6 +126,8 @@ namespace u_interface_data_indexing
 		}
 		return selected_indices;
 	}
+
+	// 100 000 elements, search
 	
 	void data_indexing_interface()
 	{
@@ -140,13 +142,7 @@ namespace u_interface_data_indexing
 		size_t max = 10;
 		BTree<connected_index, indices_less_by_persons_names> tree_indices_by_name(indices, max);
 		BTree<connected_index, indices_less_by_persons_birth_date> tree_indices_by_date(indices, max);
-		/*ifstream in;
-		in.open(filename);
-		if (!in)
-		{
-			std::cerr << "File " << filename << " could not be opened for printing" << std::endl;
-			exit(1);
-		}*/
+		
 		cout << "Welcome to Data Indexing User Interface.\n";
 		cout << "We have now " << persons->GetCount() << " persons in base.\n";
 		int menu_res = menu();
